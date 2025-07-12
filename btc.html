@@ -168,7 +168,6 @@
       <button class="clear-btn" type="button" onclick="limpiarCampo('comisionVenta')" title="Limpiar campo">✕</button>
     </div>
 
-    <!-- Campo para mostrar el precio BTC/USDT actualizado automáticamente -->
     <div class="input-group">
       <div class="input-wrapper">
         <label for="precioBTCUSDT">Precio BTC/USDT (actualizado automáticamente):</label>
@@ -184,13 +183,13 @@
   </div>
 
   <script>
-    // Función para limpiar un campo específico
+    // Limpia un campo específico
     function limpiarCampo(id) {
       document.getElementById(id).value = "";
       document.getElementById('resultado').style.display = "none";
     }
 
-    // Función para limpiar todos los campos
+    // Limpia todos los campos y recarga precio BTC
     function limpiarTodo() {
       const campos = [
         'precioCompra',
@@ -202,11 +201,10 @@
       ];
       campos.forEach(id => document.getElementById(id).value = "");
       document.getElementById('resultado').style.display = "none";
-      // Volver a cargar el precio BTC automáticamente
       cargarPrecioBTC();
     }
 
-    // Función para mostrar el resultado con color personalizado
+    // Muestra el resultado con color personalizado
     function mostrarResultado(mensaje, color) {
       const resultado = document.getElementById('resultado');
       resultado.style.display = "block";
@@ -214,27 +212,24 @@
       resultado.innerHTML = mensaje;
     }
 
-    // Función para cargar el precio BTC/USDT desde la API de CoinGecko
+    // Obtiene el precio BTC/USDT desde CoinGecko con manejo de errores
     async function cargarPrecioBTC() {
       try {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usdt');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        const precioBTC = data.bitcoin.usdt;
-        document.getElementById('precioBTCUSDT').value = precioBTC.toFixed(2);
+        if (data.bitcoin && data.bitcoin.usdt) {
+          document.getElementById('precioBTCUSDT').value = data.bitcoin.usdt.toFixed(2);
+        } else {
+          throw new Error('Datos de precio no encontrados en la respuesta');
+        }
       } catch (error) {
         console.error('Error al obtener el precio de BTC:', error);
         document.getElementById('precioBTCUSDT').value = "Error";
       }
     }
 
-    // Llamar a cargarPrecioBTC al cargar la página
-    window.onload = () => {
-      cargarPrecioBTC();
-      // Actualizar cada 60 segundos
-      setInterval(cargarPrecioBTC, 60000);
-    };
-
-    // Función principal para calcular margen y ganancias
+    // Calcula margen y ganancias
     function calcularMargen() {
       const precioCompra = parseFloat(document.getElementById('precioCompra').value);
       const precioVenta = parseFloat(document.getElementById('precioVenta').value);
@@ -279,6 +274,12 @@
         "#FCD535"
       );
     }
+
+    // Cargar precio BTC al iniciar y actualizar cada 60 segundos
+    window.onload = () => {
+      cargarPrecioBTC();
+      setInterval(cargarPrecioBTC, 60000);
+    };
   </script>
 </body>
 </html>
