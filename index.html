@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Calculadora de margen P2P para Binance que incluye comisiones reales de compra y venta. Calcula tu ganancia neta en USDT y Bolívares, y el porcentaje de beneficio sobre tu inversión para operaciones seguras y rentables.">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Calculadora de margen P2P para Binance que incluye comisiones reales de compra y venta. Calcula tu ganancia neta en USDT y Bolívares, y el porcentaje de beneficio sobre tu inversión para operaciones seguras y rentables." />
   <title>Calculadora de Margen P2P Binance</title>
   <style>
     body {
@@ -15,6 +15,8 @@
       justify-content: center;
       height: 100vh;
       margin: 0;
+      position: relative;
+      overflow: hidden;
     }
     .calculator {
       background: #23262F;
@@ -23,6 +25,7 @@
       box-shadow: 0 6px 24px rgba(0,0,0,0.25);
       max-width: 350px;
       width: 100%;
+      z-index: 1;
     }
     .calculator h2 {
       text-align: center;
@@ -102,42 +105,108 @@
         padding: 1rem;
       }
     }
+
+    /* Estilos para el menú desplegable */
+    .menu-container {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+      user-select: none;
+    }
+
+    .menu-button {
+      background: #23262F;
+      color: #FCD535;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: background 0.2s;
+    }
+    .menu-button:hover {
+      background: #393c47;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 110%;
+      right: 0;
+      background: #23262F;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      min-width: 140px;
+      overflow: hidden;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: #FCD535;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .dropdown-menu a:hover {
+      background: #393c47;
+    }
+
+    .menu-container.show .dropdown-menu {
+      display: block;
+    }
   </style>
 </head>
 <body>
-  <div class="calculator">
+  <!-- Menú desplegable -->
+  <div class="menu-container" id="menuContainer">
+    <button class="menu-button" id="menuButton" aria-haspopup="true" aria-expanded="false" aria-controls="dropdownMenu">
+      Menú ▼
+    </button>
+    <nav class="dropdown-menu" id="dropdownMenu" role="menu" aria-label="Menú de navegación">
+      <a href="btc.html" role="menuitem" tabindex="-1">BTC</a>
+      <!-- Puedes agregar más enlaces aquí -->
+      <!-- <a href="otra_pagina.html" role="menuitem" tabindex="-1">Otra función</a> -->
+    </nav>
+  </div>
+
+  <div class="calculator" role="main" aria-label="Calculadora de margen P2P Binance">
     <h2>Calculadora Margen P2P Binance</h2>
     <div class="input-group">
       <div class="input-wrapper">
         <label for="precioCompra">Precio de compra (Bs/USDT):</label>
-        <input type="number" id="precioCompra" min="0" step="0.0001" placeholder="Ej: 123.456" required>
+        <input type="number" id="precioCompra" min="0" step="0.0001" placeholder="Ej: 123.456" required aria-required="true" />
       </div>
       <button class="clear-btn" type="button" onclick="limpiarCampo('precioCompra')" title="Limpiar campo">✕</button>
     </div>
     <div class="input-group">
       <div class="input-wrapper">
         <label for="precioVenta">Precio de venta (Bs/USDT):</label>
-        <input type="number" id="precioVenta" min="0" step="0.0001" placeholder="Ej: 123.456" required>
+        <input type="number" id="precioVenta" min="0" step="0.0001" placeholder="Ej: 123.456" required aria-required="true" />
       </div>
       <button class="clear-btn" type="button" onclick="limpiarCampo('precioVenta')" title="Limpiar campo">✕</button>
     </div>
     <div class="input-group">
       <div class="input-wrapper">
         <label for="montoUSDT">Monto operado (USDT):</label>
-        <input type="number" id="montoUSDT" min="0" step="0.01" placeholder="Ej: 123.45" required>
+        <input type="number" id="montoUSDT" min="0" step="0.01" placeholder="Ej: 123.45" required aria-required="true" />
       </div>
       <button class="clear-btn" type="button" onclick="limpiarCampo('montoUSDT')" title="Limpiar campo">✕</button>
     </div>
     <button class="btn" onclick="calcularMargen()">Calcular</button>
-    <div id="resultado" class="result" style="display:none;"></div>
+    <div id="resultado" class="result" style="display:none;" aria-live="polite"></div>
   </div>
 
   <script>
+    // Función para limpiar campos y ocultar resultado
     function limpiarCampo(id) {
       document.getElementById(id).value = "";
       document.getElementById('resultado').style.display = "none";
     }
 
+    // Cálculo de margen y ganancia neta
     function calcularMargen() {
       const precioCompra = parseFloat(document.getElementById('precioCompra').value);
       const precioVenta = parseFloat(document.getElementById('precioVenta').value);
@@ -176,6 +245,33 @@
          <b>Ganancia neta:</b> ${gananciaNetaBs.toFixed(2)} Bs<br>
          <b>Margen neto:</b> ${margenPorcentual.toFixed(2)} %`;
     }
+
+    // Control del menú desplegable
+    const menuContainer = document.getElementById('menuContainer');
+    const menuButton = document.getElementById('menuButton');
+
+    menuButton.addEventListener('click', () => {
+      const expanded = menuButton.getAttribute('aria-expanded') === 'true' || false;
+      menuButton.setAttribute('aria-expanded', !expanded);
+      menuContainer.classList.toggle('show');
+    });
+
+    // Cerrar menú al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!menuContainer.contains(e.target)) {
+        menuContainer.classList.remove('show');
+        menuButton.setAttribute('aria-expanded', false);
+      }
+    });
+
+    // Cerrar menú con tecla ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        menuContainer.classList.remove('show');
+        menuButton.setAttribute('aria-expanded', false);
+        menuButton.focus();
+      }
+    });
   </script>
 </body>
 </html>
